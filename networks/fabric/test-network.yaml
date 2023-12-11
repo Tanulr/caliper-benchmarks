@@ -10,16 +10,13 @@ channels:
     # the chaincodeIDs of all the fabric chaincodes in caliper-benchmarks
     contracts:
     - id: fabcar
-    - id: fixed-asset
-    - id: marbles
-    - id: simple
-    - id: smallbank
 
 organizations:
   - mspid: Org1MSP
     # Identities come from cryptogen created material for test-network
     identities:
       certificates:
+      # identity will need to be given a unique name within the organization
       - name: 'User1'
         clientPrivateKey:
           path: '../fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/keystore/priv_sk'

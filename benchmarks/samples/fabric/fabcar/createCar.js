@@ -16,10 +16,10 @@
 
 const { WorkloadModuleBase } = require('@hyperledger/caliper-core');
 
-const colors = ['blue', 'red', 'green', 'yellow', 'black', 'purple', 'white', 'violet', 'indigo', 'brown'];
-const makes = ['Toyota', 'Ford', 'Hyundai', 'Volkswagen', 'Tesla', 'Peugeot', 'Chery', 'Fiat', 'Tata', 'Holden'];
-const models = ['Prius', 'Mustang', 'Tucson', 'Passat', 'S', '205', 'S22L', 'Punto', 'Nano', 'Barina'];
-const owners = ['Tomoko', 'Brad', 'Jin Soo', 'Max', 'Adrianna', 'Michel', 'Aarav', 'Pari', 'Valeria', 'Shotaro'];
+const chip = ['Intel i5', 'Intel i6', 'Intel i7', 'AMD Ryzen', 'AMD threadlon'];
+//const makes = ['Toyota', 'Ford', 'Hyundai', 'Volkswagen', 'Tesla', 'Peugeot', 'Chery', 'Fiat', 'Tata', 'Holden'];
+const quantity = [1, 3, 5, 7, 9];
+const verify = ['HZ: 2.9 GHz, Cores: 4, Threads: 8, Cache: 48MB', 'HZ: 3.3 GHz, Cores: 8, Threads: 32, Cache: 86MB', 'HZ: 3.6 GHz, Cores: 12, Threads: 20, Cache: 25MB', 'HZ: 3.4 GHz, Cores: 8, Threads: 16, Cache: 96'];
 
 /**
  * Workload module for the benchmark round.
@@ -39,21 +39,72 @@ class CreateCarWorkload extends WorkloadModuleBase {
      */
     async submitTransaction() {
         this.txIndex++;
-        let carNumber = 'Client' + this.workerIndex + '_CAR' + this.txIndex.toString();
-        let carColor = colors[Math.floor(Math.random() * colors.length)];
-        let carMake = makes[Math.floor(Math.random() * makes.length)];
-        let carModel = models[Math.floor(Math.random() * models.length)];
-        let carOwner = owners[Math.floor(Math.random() * owners.length)];
-
-        let args = {
+        let chipID_ = 'Client' + this.workerIndex + '_CHIP' + this.txIndex.toString();
+        let chip_ = chip[Math.floor(Math.random() * chip.length)];
+        let qty_ = quantity[Math.floor(Math.random() * quantity.length)];
+        let verify_ = verify[Math.floor(Math.random() * verify.length)];
+        let txnID = this.txIndex.toString();
+        // CreateAsset
+        let args1 = {
             contractId: 'fabcar',
             contractVersion: 'v1',
-            contractFunction: 'createCar',
-            contractArguments: [carNumber, carMake, carModel, carColor, carOwner],
+            contractFunction: 'CreateAsset',
+            invokerIdentity: 'User1',
+            contractArguments: [chipID_, chip_, qty_, verify_],
+            timeout: 30
+        };
+        // Init
+        let args2 = {
+            contractId: 'fabcar',
+            contractVersion: 'v1',
+            contractFunction: 'Init',
+            invokerIdentity: 'User1',
+            contractArguments: [txnID, chipID_, "Org2MSP", "Org3MSP", verify_, "100", "10"],
+            timeout: 30
+        };
+        // StartDelivery
+        let args3 = {
+            contractId: 'fabcar',
+            contractVersion: 'v1',
+            contractFunction: 'StartDelivery',
+            invokerIdentity: 'User3',
+            contractArguments: [txnID, "true"],
+            timeout: 30
+        };
+        // InitiateDelivery
+        let args4 = {
+            contractId: 'fabcar',
+            contractVersion: 'v1',
+            contractFunction: 'InitiateDelivery',
+            invokerIdentity: 'User1',
+            contractArguments: [txnID, "true"],
+            timeout: 30
+        };
+        // ConfirmDelivery
+        let args5 = {
+            contractId: 'fabcar',
+            contractVersion: 'v1',
+            contractFunction: 'ConfirmDelivery',
+            invokerIdentity: 'User2',
+            contractArguments: [txnID, "true"],
+            timeout: 30
+        };
+        // verifyProducts
+        let args6 = {
+            contractId: 'fabcar',
+            contractVersion: 'v1',
+            contractFunction: 'CreateAsset',
+            invokerIdentity: 'User3',
+            contractArguments: [txnID, verify_],
             timeout: 30
         };
 
-        await this.sutAdapter.sendRequests(args);
+        await this.sutAdapter.sendRequests(args1);
+        await this.sutAdapter.sendRequests(args2);
+        await this.sutAdapter.sendRequests(args3);
+        await this.sutAdapter.sendRequests(args4);
+        await this.sutAdapter.sendRequests(args5);
+        await this.sutAdapter.sendRequests(args6);
     }
 }
 

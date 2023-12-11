@@ -74,7 +74,7 @@ class QueryCarWorkload extends WorkloadModuleBase {
  * Create a new instance of the workload module.
  * @return {WorkloadModuleInterface}
  */
-function createWorkloadModule() {
+function createWorkloadModule() { 
     return new QueryCarWorkload();
 }
 
